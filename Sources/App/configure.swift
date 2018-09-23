@@ -30,11 +30,20 @@ public func configure(
     
     var databases = DatabasesConfig()
     // 3
+    let hostname = Environment.get("DATABASE_HOSTNAME")
+        ?? "localhost"
+    let username = Environment.get("DATABASE_USER") ?? "vapor"
+    let databaseName = Environment.get("DATABASE_DB") ?? "vapor"
+    let password = Environment.get("DATABASE_PASSWORD")
+        ?? "password"
+    // 3
     let databaseConfig = MySQLDatabaseConfig(
-        hostname: "localhost",
-        username: "vapor",
-        password: "password",
-        database: "vapor")
+        hostname: hostname,
+        username: username,
+        password: password,
+        database: databaseName)
+    // 4
+    
     let database = MySQLDatabase(config: databaseConfig)
     databases.add(database: database, as: .mysql)
     services.register(databases)
