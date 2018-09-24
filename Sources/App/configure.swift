@@ -31,7 +31,7 @@ public func configure(
     var databases = DatabasesConfig()
     // 3
     let hostname = Environment.get("DATABASE_HOSTNAME")
-        ?? "localhost"
+        ?? "0.0.0.0"
     let username = Environment.get("DATABASE_USER") ?? "vapor"
     let databaseName = Environment.get("DATABASE_DB") ?? "vapor"
     let password = Environment.get("DATABASE_PASSWORD")
