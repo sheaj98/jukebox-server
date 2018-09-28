@@ -43,10 +43,20 @@ final class PartyManager {
         return fiveDigitNumber(req: request)
             .flatMap(to: PartySession.self) { [unowned self] key -> Future<PartySession> in
                 let session = PartySession(id: String(key))
+                
                 guard self.sessions[session] == nil else {
                     return self.createPartySession(for: request)
                     
                 }
+                try SpotifyToken.decode(from: request).map( { token in
+                    let party = Party(sessionId: key, spotifyToken: token.token)
+                    party.save(on: request).catch({ error in
+                        print(error)
+                    })
+                }).catch({ error in
+                    print(error)
+                })
+        
                 self.sessions[session] = []
                 return Future.map(on: request) { session }
         }

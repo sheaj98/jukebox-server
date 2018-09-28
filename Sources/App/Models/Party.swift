@@ -12,9 +12,11 @@ import FluentMySQL
 final class Party: Content, Codable {
     var id: Int?
     var sessionId: String
+    var spotifyToken: String
     
-    init(sessionId: String) {
+    init(sessionId: String, spotifyToken: String) {
         self.sessionId = sessionId
+        self.spotifyToken = spotifyToken
     }
 }
 
