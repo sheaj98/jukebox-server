@@ -15,10 +15,16 @@ public func routes(_ router: Router) throws {
     router.post("party/create", use: sessionManager.createPartySession)
     
     router.post("party/close", PartySession.parameter) {
-        req -> HTTPStatus in
-            let session = try req.parameters.next(PartySession.self)
-            sessionManager.close(session)
-        return .ok
+        req -> Future<HTTPStatus> in
+        print("Delete Called")
+        let session = try req.parameters.next(PartySession.self)
+        sessionManager.close(session)
+        Party.query(on: req).filter(\.sessionId == session.id).first().unwrap(or: Abort.init(HTTPResponseStatus.notFound)).delete(on: req)
+        return Song.query(on: req).filter(\.sessionId == session.id).all().then({ songs in
+            return songs.map({ song in
+                return song.delete(on: req)
+            }).flatten(on: req)
+        }).transform(to: HTTPStatus.noContent)
     }
     
     router.post("party/update", PartySession.parameter) {
