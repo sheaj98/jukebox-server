@@ -16,7 +16,8 @@ public func routes(_ router: Router) throws {
     
     router.post("party/close", PartySession.parameter) {
         req -> Future<HTTPStatus> in
-        print("Delete Called")
+        let logger = try? req.sharedContainer.make(Logger.self)
+        logger?.log(req.description, at: .verbose, file: #file, function: #function, line: #line, column: #column)
         let session = try req.parameters.next(PartySession.self)
         sessionManager.close(session)
         Party.query(on: req).filter(\.sessionId == session.id).first().unwrap(or: Abort.init(HTTPResponseStatus.notFound)).delete(on: req)
@@ -29,6 +30,8 @@ public func routes(_ router: Router) throws {
     
     router.post("party/update", PartySession.parameter) {
     req -> Future<HTTPStatus> in
+    let logger = try? req.sharedContainer.make(Logger.self)
+    logger?.log(req.description, at: .verbose, file: #file, function: #function, line: #line, column: #column)
     let session = try req.parameters.next(PartySession.self)
     return try Song.decode(from: req)
         .map(to: HTTPStatus.self) { song in
@@ -36,20 +39,19 @@ public func routes(_ router: Router) throws {
                 guard let lastSong = lastSong else { return }
                 lastSong.nextSongId = song.songId;
                 lastSong.save(on: req).catch({ error in
-                    print(error)
+                    logger?.log(error.localizedDescription, at: .error, file: #file, function: #function, line: #line, column: #column)
                 })
             }).catch({ error in
-                print(error)
+                logger?.log(error.localizedDescription, at: .error, file: #file, function: #function, line: #line, column: #column)
             })
             song.save(on: req).do({ _ in
                 Song.query(on: req).filter(\.sessionId == session.id).filter(\.hasPlayed == false).all().do({ songs in
-                    print(songs)
                     sessionManager.addSong(songs, for: session)
                 }).catch({ error in
-                    print(error)
+                    logger?.log(error.localizedDescription, at: .error, file: #file, function: #function, line: #line, column: #column)
                 })
             }).catch({ error in
-                print(error)
+                logger?.log(error.localizedDescription, at: .error, file: #file, function: #function, line: #line, column: #column)
             })
             
             return .ok
@@ -73,12 +75,16 @@ public func routes(_ router: Router) throws {
     
     router.get("party", PartySession.parameter, "songs") {
         req -> Future<[Song]> in
+        let logger = try? req.sharedContainer.make(Logger.self)
+        logger?.log(req.description, at: .verbose, file: #file, function: #function, line: #line, column: #column)
         let session = try req.parameters.next(PartySession.self)
         return Song.query(on: req).filter(\.sessionId == session.id).filter(\.hasPlayed == false).all()
     }
     
     router.get("party", PartySession.parameter, "search") {
         request -> Future<[Song]> in
+        let logger = try? request.sharedContainer.make(Logger.self)
+        logger?.log(request.description, at: .verbose, file: #file, function: #function, line: #line, column: #column)
         let session = try request.parameters.next(PartySession.self)
         return Party.query(on: request).filter(\.sessionId == session.id).first().unwrap(or: Abort.init(HTTPResponseStatus.notFound)).flatMap({ party in
             

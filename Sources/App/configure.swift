@@ -1,5 +1,7 @@
 import FluentMySQL
 import Vapor
+import SwiftyBeaverVapor
+import SwiftyBeaver
 
 public func configure(
     _ config: inout Config,
@@ -12,6 +14,14 @@ public func configure(
     let router = EngineRouter.default()
     try routes(router)
     services.register(router, as: Router.self)
+    
+    let loggingDestination = SBPlatformDestination(appID: "k6POqE", appSecret: "Qsm7uhkfzkivo3lkeznazhbjmvgi7gcF", encryptionKey: "omBc4pbe7gaIns3WjXapkouvvjiivci4")
+    let consoleDestination = ConsoleDestination()
+    let file = FileDestination()  // log to file
+    file.logFileURL = URL(string: "file:///tmp/VaporLogs.log")!
+    try services.register(SwiftyBeaverProvider(destinations: [loggingDestination, consoleDestination, file]))
+    
+    config.prefer(SwiftyBeaverVapor.self, for: Logger.self)
     
     let websockets = NIOWebSocketServer.default()
     sockets(websockets)
@@ -51,7 +61,7 @@ public func configure(
     // 4
     migrations.add(model: Song.self, database: .mysql)
     migrations.add(model: Party.self, database: .mysql)
-    migrations.add(migration: AddSpotifyTokenToParty.self, database: .mysql)
+    //migrations.add(migration: AddSpotifyTokenToParty.self, database: .mysql)
     
     services.register(migrations)
 }

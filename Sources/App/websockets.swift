@@ -22,11 +22,16 @@ public func sockets(_ websockets: NIOWebSocketServer) {
     // Listener
     
     websockets.get("party", PartySession.parameter) { ws, req in
+        let logger = try? req.sharedContainer.make(Logger.self)
+        logger?.log(req.description, at: .verbose, file: #file, function: #function, line: #line, column: #column)
         let session = try req.parameters.next(PartySession.self)
         guard sessionManager.sessions[session] != nil else {
+            logger?.log("WS Closing due to session being nil", at: .debug, file: #file, function: #function, line: #line, column: #column)
             ws.close()
             return
         }
         sessionManager.add(listener: ws, to: session)
+        logger?.log("Adding listener \(ws) to session \(session).", at: .debug, file: #file, function: #function, line: #line, column: #column)
+
     }
 }
