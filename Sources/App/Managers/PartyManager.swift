@@ -64,7 +64,6 @@ final class PartyManager {
     
     func addSong(_ songs: [Song], for session: PartySession) {
         guard let listeners = sessions[session] else { return }
-        print("Song Added")
         listeners.forEach { ws in ws.send(songs) }
     }
     
