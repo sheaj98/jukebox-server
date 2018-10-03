@@ -30,7 +30,7 @@ public func sockets(_ websockets: NIOWebSocketServer) {
             ws.close()
             return
         }
-        sessionManager.add(listener: ws, to: session)
+        sessionManager.add(listener: ws, to: session, on: req)
         logger?.log("Adding listener \(ws) to session \(session).", at: .info, file: #file, function: #function, line: #line, column: #column)
 
     }

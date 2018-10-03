@@ -47,7 +47,7 @@ public func routes(_ router: Router) throws {
             song.save(on: req).do({ _ in
                 Song.query(on: req).filter(\.sessionId == session.id).filter(\.hasPlayed == false).all().do({ songs in
                     logger?.log("Sending Socket event with songs \(songs)", at: .info, file: #file, function: #function, line: #line, column: #column)
-                    sessionManager.addSong(songs, for: session)
+                    sessionManager.addSong(songs, for: session, on: req)
                 }).catch({ error in
                     logger?.log(error.localizedDescription, at: .error, file: #file, function: #function, line: #line, column: #column)
                 })
@@ -67,7 +67,7 @@ public func routes(_ router: Router) throws {
             song.hasPlayed = true
             return song.save(on: req).flatMap(to: HTTPStatus.self) { newSong in
                 return Song.query(on: req).filter(\.sessionId == session.id).filter(\.hasPlayed == false).all().map(to: HTTPStatus.self, { songs in
-                    sessionManager.addSong(songs, for: session)
+                    sessionManager.addSong(songs, for: session, on: req)
                     return HTTPStatus.accepted
                 })
             }
