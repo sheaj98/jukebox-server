@@ -61,7 +61,7 @@ public func configure(
     // 4
     migrations.add(model: Song.self, database: .mysql)
     migrations.add(model: Party.self, database: .mysql)
-    migrations.add(migration: AddSpotifyTokenToParty.self, database: .mysql)
+    //migrations.add(migration: AddSpotifyTokenToParty.self, database: .mysql)
     
     services.register(migrations)
 }
