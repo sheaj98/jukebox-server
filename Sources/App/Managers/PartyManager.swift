@@ -27,10 +27,12 @@ final class PartyManager {
             return
         }
         listeners.append(listener)
+        logger?.log("Added listener for party session \(session)", at: .info, file: #file, function: #function, line: #line, column: #column)
         sessions[session] = listeners
         
         listener.onClose.always { [weak self, weak listener] in
             guard let listener = listener else { return }
+            logger?.log("Removing listener \(listener)", at: .info, file: #file, function: #function, line: #line, column: #column)
             self?.remove(listener: listener, from: session)
         }
     }
@@ -72,8 +74,13 @@ final class PartyManager {
             logger?.log("Cannot find listeners for party session \(session)", at: .error, file: #file, function: #function, line: #line, column: #column)
             return
         }
+        
+        if (listeners.isEmpty) {
+            logger?.log("Cannot find listeners for party session \(session)", at: .error, file: #file, function: #function, line: #line, column: #column)
+        }
+        
         listeners.forEach { ws in
-            logger?.log("Sending song to client \(ws)", at: .info, file: #file, function: #function, line: #line, column: #column)
+            logger?.log("Sending song to client \(ws) in \(listeners)", at: .info, file: #file, function: #function, line: #line, column: #column)
             ws.send(songs)
         }
     }
