@@ -20,8 +20,12 @@ final class PartyManager {
     
     // MARK: Observer Interactions
     
-    func add(listener: WebSocket, to session: PartySession) {
-        guard var listeners = sessions[session] else { return }
+    func add(listener: WebSocket, to session: PartySession, on req: Request) {
+        let logger = try? req.sharedContainer.make(Logger.self)
+        guard var listeners = sessions[session] else {
+            logger?.log("Cannot find listeners for party session \(session)", at: .error, file: #file, function: #function, line: #line, column: #column)
+            return
+        }
         listeners.append(listener)
         sessions[session] = listeners
         
@@ -62,9 +66,16 @@ final class PartyManager {
         }
     }
     
-    func addSong(_ songs: [Song], for session: PartySession) {
-        guard let listeners = sessions[session] else { return }
-        listeners.forEach { ws in ws.send(songs) }
+    func addSong(_ songs: [Song], for session: PartySession, on req: Request) {
+        let logger = try? req.sharedContainer.make(Logger.self)
+        guard let listeners = sessions[session] else {
+            logger?.log("Cannot find listeners for party session \(session)", at: .error, file: #file, function: #function, line: #line, column: #column)
+            return
+        }
+        listeners.forEach { ws in
+            logger?.log("Sending song to client \(ws)", at: .info, file: #file, function: #function, line: #line, column: #column)
+            ws.send(songs)
+        }
     }
     
     func close(_ session: PartySession) {
